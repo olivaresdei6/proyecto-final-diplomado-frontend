@@ -50,7 +50,7 @@ const Sidebar = () => {
                 </>
             )}
 
-            {rol === "super administrador" &&(
+            {rol === "administrador" &&(
                 <Link
                     to="/libros/gestionar-libros"
                     className="bg-teal-600 w-full p-3 text-white uppercase font-bold block mt-5 text-center rounded-md"
