@@ -40,6 +40,10 @@ const App = () => {
                        <Route path="roles" element={<h1>Roles</h1>} />
                        <Route path="rutas" element={<h1>Usuarios</h1>} />
                    </Route>
+
+                   <Route path="*" element={
+                       <h1 className="text-center mt-5 text-3xl font-bold text-white">404: Not Found</h1>
+                   } />
                </Routes>
            </AuthProvider>
         </BrowserRouter>
