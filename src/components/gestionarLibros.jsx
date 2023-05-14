@@ -225,18 +225,19 @@ const GestionarLibros = () => {
 
                         </div>
                     ): (
-                        libros.length > 0 ? (
+                        <>
+                            <h2 className="text-2xl font-bold mb-4 text-white">Gestionar libros</h2>
+                            <button
+                                onClick={() => {
+                                    setShowModal(true);
+                                    setLibroSeleccionado(null);
+                                }}
+                                className="text-white bg-teal-600 p-2 rounded-md font-bold mb-4"
+                            >
+                                Agregar libro
+                            </button>
+                            libros.length > 0 ? (
                             <div>
-                                <h2 className="text-2xl font-bold mb-4 text-white">Gestionar libros</h2>
-                                <button
-                                    onClick={() => {
-                                        setShowModal(true);
-                                        setLibroSeleccionado(null);
-                                    }}
-                                    className="text-white bg-teal-600 p-2 rounded-md font-bold mb-4"
-                                >
-                                    Agregar libro
-                                </button>
                                 <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {libros.map((libro) => (
                                         <li
@@ -375,9 +376,11 @@ const GestionarLibros = () => {
                                     )
                                 )}
                             </div>
-                        ) : (
+                            ) : (
                             <p className="text-center text-2xl text-white">No hay libros registrados</p>
-                        )
+                            )
+                        </>
+
                     )
             }
         </>
