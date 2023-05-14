@@ -236,149 +236,151 @@ const GestionarLibros = () => {
                             >
                                 Agregar libro
                             </button>
-                            libros.length > 0 ? (
-                            <div>
-                                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {libros.map((libro) => (
-                                        <li
-                                            key={libro.uuid}
-                                        >
-                                            {
-                                                <LibroCard
-                                                    titulo={ libro.titulo}
-                                                    descripcion={ libro.descripcion}
-                                                    autor={ libro.autor}
-                                                    unidades={libro.unidades}
-                                                    unidadesDisponibles={libro.unidadesDisponibles}
-                                                    url={libro.url}
-                                                    onEdit={() => handleEdit(libro.uuid)}
-                                                    onDelete={() =>  handleDelete(libro.uuid)}
-                                                    observaciones={libro.observaciones}
-                                                />
-                                            }
+                            {
+                                libros.length > 0 ? (
+                                    <div>
+                                        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                            {libros.map((libro) => (
+                                                <li
+                                                    key={libro.uuid}
+                                                >
+                                                    {
+                                                        <LibroCard
+                                                            titulo={ libro.titulo}
+                                                            descripcion={ libro.descripcion}
+                                                            autor={ libro.autor}
+                                                            unidades={libro.unidades}
+                                                            unidadesDisponibles={libro.unidadesDisponibles}
+                                                            url={libro.url}
+                                                            onEdit={() => handleEdit(libro.uuid)}
+                                                            onDelete={() =>  handleDelete(libro.uuid)}
+                                                            observaciones={libro.observaciones}
+                                                        />
+                                                    }
 
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="flex justify-center mt-4">
-                                    <button
-                                        disabled={paginaActual === 1}
-                                        onClick={async () => {
-                                            setPaginaActual(paginaActual - 1)
-                                            paginaActual = paginaActual - 1;
-                                            await obtenerLibrosPaginados()
-                                        }}
-                                        className={`text-white p-2 rounded-md font-bold mr-4 ${
-                                            paginaActual === 1 ? "bg-gray-500" : "bg-teal-600"
-                                        }`}
-                                    >
-                                        Anterior
-                                    </button>
-                                    <span className="font-bold text-white">
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <div className="flex justify-center mt-4">
+                                            <button
+                                                disabled={paginaActual === 1}
+                                                onClick={async () => {
+                                                    setPaginaActual(paginaActual - 1)
+                                                    paginaActual = paginaActual - 1;
+                                                    await obtenerLibrosPaginados()
+                                                }}
+                                                className={`text-white p-2 rounded-md font-bold mr-4 ${
+                                                    paginaActual === 1 ? "bg-gray-500" : "bg-teal-600"
+                                                }`}
+                                            >
+                                                Anterior
+                                            </button>
+                                            <span className="font-bold text-white">
                                  Página {paginaActual} de {totalPaginas}
                                 </span>
-                                    <button
-                                        disabled={paginaActual === totalPaginas}
-                                        onClick={async () => {
-                                            setPaginaActual(paginaActual + 1)
-                                            paginaActual = paginaActual + 1;
-                                            await obtenerLibrosPaginados()
-                                        }}
-                                        className={`text-white p-2 rounded-md font-bold ml-4 ${
-                                            paginaActual === totalPaginas ? "bg-gray-500" : "bg-teal-600"
-                                        }`}
-                                    >
-                                        Siguiente
-                                    </button>
-                                </div>
-                                {setShowModal && (
-                                    deleteModal ? (
-                                        <Modal show={true} onClose={(e) => {
-                                            setShowModal(false);
-                                            setDeleteModal(false);
-                                        }}>
-                                            {msg && <Alerta alerta={alerta}/>}
-                                            <h2 className="text-2xl font-bold mb-4">Eliminar libro</h2>
-                                            <p className="text-xl font-bold mb-4">¿Estás seguro de que quieres eliminar el libro?</p>
-                                            <p className="text-xl font-bold mb-4">Esta acción no se puede deshacer.</p>
-                                            <p className="text-xl font-bold mb-4">Título: {titulo}</p>
-                                            <p className="text-xl font-bold mb-4">Autor: {autor}</p>
-                                            <p className="text-xl font-bold mb-4">Unidades: {unidades}</p>
-                                            <p className="text-xl font-bold mb-4">Unidades disponibles: {unidadesDisponibles}</p>
-                                            <div>
-                                                <button type="submit" className="text-white bg-orange-400 p-2 rounded-md font-bold" id="eliminar" onClick={handleDeleteSubmit}>
-                                                    Eliminar
-                                                </button>
-                                            </div>
-                                        </Modal>
-                                    ) : (
-                                        showModal && (
-                                            <Modal show={true} onClose={() => setShowModal(false)}>
-                                                <h2 className="text-2xl font-bold mb-4">
-                                                    {uuid ? "Agregar libro" : "Modificar libro"}
-                                                </h2>
-                                                {msg && <Alerta alerta={alerta}/>}
-                                                <form onSubmit={handleSubmit}>
-                                                    <label className="block mb-2">Título:</label>
-                                                    <input
-                                                        type="text"
-                                                        value={titulo}
-                                                        onChange={(e) => setTitulo(e.target.value)}
-                                                        className="w-full p-2 mb-4 border rounded-md"
-                                                        required
-                                                    />
-                                                    <label className="block mb-2">Autor:</label>
-                                                    <input
-                                                        type="text"
-                                                        value={autor}
-                                                        onChange={(e) => setAutor(e.target.value)}
-                                                        className="w-full p-2 mb-4 border rounded-md"
-                                                        required
-                                                    />
-                                                    <label className="block mb-2">Descripción:</label>
-                                                    <textarea
-                                                        value={descripcion}
-                                                        onChange={(e) => setDescripcion(e.target.value)}
-                                                        className="w-full p-2 mb-4 border rounded-md"
-                                                        required
-                                                    />
+                                            <button
+                                                disabled={paginaActual === totalPaginas}
+                                                onClick={async () => {
+                                                    setPaginaActual(paginaActual + 1)
+                                                    paginaActual = paginaActual + 1;
+                                                    await obtenerLibrosPaginados()
+                                                }}
+                                                className={`text-white p-2 rounded-md font-bold ml-4 ${
+                                                    paginaActual === totalPaginas ? "bg-gray-500" : "bg-teal-600"
+                                                }`}
+                                            >
+                                                Siguiente
+                                            </button>
+                                        </div>
+                                        {setShowModal && (
+                                            deleteModal ? (
+                                                <Modal show={true} onClose={(e) => {
+                                                    setShowModal(false);
+                                                    setDeleteModal(false);
+                                                }}>
+                                                    {msg && <Alerta alerta={alerta}/>}
+                                                    <h2 className="text-2xl font-bold mb-4">Eliminar libro</h2>
+                                                    <p className="text-xl font-bold mb-4">¿Estás seguro de que quieres eliminar el libro?</p>
+                                                    <p className="text-xl font-bold mb-4">Esta acción no se puede deshacer.</p>
+                                                    <p className="text-xl font-bold mb-4">Título: {titulo}</p>
+                                                    <p className="text-xl font-bold mb-4">Autor: {autor}</p>
+                                                    <p className="text-xl font-bold mb-4">Unidades: {unidades}</p>
+                                                    <p className="text-xl font-bold mb-4">Unidades disponibles: {unidadesDisponibles}</p>
+                                                    <div>
+                                                        <button type="submit" className="text-white bg-orange-400 p-2 rounded-md font-bold" id="eliminar" onClick={handleDeleteSubmit}>
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                </Modal>
+                                            ) : (
+                                                showModal && (
+                                                    <Modal show={true} onClose={() => setShowModal(false)}>
+                                                        <h2 className="text-2xl font-bold mb-4">
+                                                            {uuid ? "Agregar libro" : "Modificar libro"}
+                                                        </h2>
+                                                        {msg && <Alerta alerta={alerta}/>}
+                                                        <form onSubmit={handleSubmit}>
+                                                            <label className="block mb-2">Título:</label>
+                                                            <input
+                                                                type="text"
+                                                                value={titulo}
+                                                                onChange={(e) => setTitulo(e.target.value)}
+                                                                className="w-full p-2 mb-4 border rounded-md"
+                                                                required
+                                                            />
+                                                            <label className="block mb-2">Autor:</label>
+                                                            <input
+                                                                type="text"
+                                                                value={autor}
+                                                                onChange={(e) => setAutor(e.target.value)}
+                                                                className="w-full p-2 mb-4 border rounded-md"
+                                                                required
+                                                            />
+                                                            <label className="block mb-2">Descripción:</label>
+                                                            <textarea
+                                                                value={descripcion}
+                                                                onChange={(e) => setDescripcion(e.target.value)}
+                                                                className="w-full p-2 mb-4 border rounded-md"
+                                                                required
+                                                            />
 
-                                                    <label className="block mb-2">Observaciones:</label>
-                                                    <textarea
-                                                        value={observaciones}
-                                                        onChange={(e) => setObservaciones(e.target.value)}
-                                                        className="w-full p-2 mb-4 border rounded-md"
-                                                        required
-                                                    />
+                                                            <label className="block mb-2">Observaciones:</label>
+                                                            <textarea
+                                                                value={observaciones}
+                                                                onChange={(e) => setObservaciones(e.target.value)}
+                                                                className="w-full p-2 mb-4 border rounded-md"
+                                                                required
+                                                            />
 
-                                                    <label className="block mb-2">URL de la imagen:</label>
-                                                    <input
-                                                        type="url"
-                                                        value={url}
-                                                        onChange={(e) => setUrl(e.target.value)}
-                                                        className="w-full p-2 mb-4 border rounded-md"
-                                                        required
-                                                    />
-                                                    <label className="block mb-2">Unidades:</label>
-                                                    <input
-                                                        type="number"
-                                                        value={unidades}
-                                                        onChange={(e) => setUnidades(parseInt(e.target.value) || 0) }
-                                                        className="w-full p-2 mb-4 border rounded-md"
-                                                        required
-                                                    />
-                                                    <button type="submit" className="text-white bg-green-600 p-2 rounded-md font-bold" id={uuid ? "editar" : "crear"} onClick={handleSubmit}>
-                                                        {uuid ? "Actualizar" : "Agregar"}
-                                                    </button>
-                                                </form>
-                                            </Modal>
-                                        )
-                                    )
-                                )}
-                            </div>
-                            ) : (
-                            <p className="text-center text-2xl text-white">No hay libros registrados</p>
-                            )
+                                                            <label className="block mb-2">URL de la imagen:</label>
+                                                            <input
+                                                                type="url"
+                                                                value={url}
+                                                                onChange={(e) => setUrl(e.target.value)}
+                                                                className="w-full p-2 mb-4 border rounded-md"
+                                                                required
+                                                            />
+                                                            <label className="block mb-2">Unidades:</label>
+                                                            <input
+                                                                type="number"
+                                                                value={unidades}
+                                                                onChange={(e) => setUnidades(parseInt(e.target.value) || 0) }
+                                                                className="w-full p-2 mb-4 border rounded-md"
+                                                                required
+                                                            />
+                                                            <button type="submit" className="text-white bg-green-600 p-2 rounded-md font-bold" id={uuid ? "editar" : "crear"} onClick={handleSubmit}>
+                                                                {uuid ? "Actualizar" : "Agregar"}
+                                                            </button>
+                                                        </form>
+                                                    </Modal>
+                                                )
+                                            )
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-center text-2xl text-white">No hay libros registrados</p>
+                                )
+                            }
                         </>
 
                     )
