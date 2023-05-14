@@ -31,20 +31,34 @@ const Sidebar = () => {
 
             </Link>
 
-            <Link
-                to="/libros/gestionar-libros"
-                className="bg-teal-600 w-full p-3 text-white uppercase font-bold block mt-5 text-center rounded-md"
-            >Gestionar libros
 
-            </Link>
+
+            {rol === "super administrador" &&(
+                <>
+                    <Link
+                        to="/permisos"
+                        className="bg-teal-600 w-full p-3 text-white uppercase font-bold block mt-5 text-center rounded-md"
+                    >Permisos
+                    </Link>
+
+                    <Link
+                        to="/libros/gestionar-libros"
+                        className="bg-teal-600 w-full p-3 text-white uppercase font-bold block mt-5 text-center rounded-md"
+                    >Gestionar libros
+
+                    </Link>
+                </>
+            )}
 
             {rol === "super administrador" &&(
                 <Link
-                    to="/permisos"
+                    to="/libros/gestionar-libros"
                     className="bg-teal-600 w-full p-3 text-white uppercase font-bold block mt-5 text-center rounded-md"
-                >Permisos
+                >Gestionar libros
+
                 </Link>
             )}
+
 
         </aside>
     )

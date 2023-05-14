@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
 import Modal from "./Modal";
-import {crearRegistro, obtenerRegistros, obtenerRegistrosPaginados, update} from "../db/db.js";
+import {crearRegistro, eliminar, obtenerRegistros, obtenerRegistrosPaginados, update} from "../db/db.js";
 import {endopint} from "../db/endopint.js";
 import LibroCard from "./LibroCard.jsx";
 import Alerta from "./Alerta.jsx";
+import {DotLoader} from "react-spinners";
 
 const GestionarLibros = () => {
     const [titulo, setTitulo] = useState( "");
@@ -12,6 +13,7 @@ const GestionarLibros = () => {
     const [observaciones, setObservaciones] = useState( "");
     const [url, setUrl] = useState( "");
     const [unidades, setUnidades] = useState(0);
+    const [unidadesDisponibles, setUnidadesDisponibles] = useState(0);
 
     const [uuid, setUuid] = useState(null);
     const [libroSeleccionado, setLibroSeleccionado] = useState(null);
@@ -24,12 +26,18 @@ const GestionarLibros = () => {
     const [alerta, setAlerta] = useState({});
 
     const [deleteModal, setDeleteModal] = useState(false);
+    const [cargando, setCargando] = useState(false);
+
 
 
     const obtenerLibrosPaginados = async () => {
+        setCargando(true);
         const {data} = await obtenerRegistrosPaginados(endopint.libroPaginacion, paginaActual, 10);
         data ? setLibros(data.registrosPaginados) : setLibros([]);
-        setTotalPaginas(data.paginasTotales);
+        if (libros.length > 0) {
+            setTotalPaginas(data.paginasTotales);
+        }
+        setCargando(false);
     }
 
     const crearLibro = async () => {
@@ -60,26 +68,30 @@ const GestionarLibros = () => {
     const handleEdit = (uuid) => {
         setShowModal(true);
         const libro = libros.find(libro => libro.uuid === uuid);
+        console.log(libro)
         setTitulo(libro.titulo);
         setAutor(libro.autor);
         setDescripcion(libro.descripcion ? libro.descripcion : "");
         setObservaciones(libro.observaciones ? libro.observaciones : "");
         setUrl(libro.url);
         setUnidades(libro.unidades);
+        setUnidadesDisponibles(libro.unidadesDisponibles);
         setUuid(uuid);
     }
 
-    const handleDelete = async (uuid) => {
+    const handleDelete = ( uuid) => {
         setShowModal(true);
         setDeleteModal(true);
         const libro = libros.find(libro => libro.uuid === uuid);
+        console.log(libro)
         setTitulo(libro.titulo);
         setAutor(libro.autor);
         setDescripcion(libro.descripcion ? libro.descripcion : "");
         setObservaciones(libro.observaciones ? libro.observaciones : "");
         setUrl(libro.url);
         setUnidades(libro.unidades);
-        setUuid(uuid);
+        setUnidadesDisponibles(libro.unidadesDisponibles);
+        setUuid(libro.uuid);
     }
 
     useEffect(() => {
@@ -160,6 +172,33 @@ const GestionarLibros = () => {
 
     }
 
+    const handleDeleteSubmit = async (e) => {
+        e.preventDefault();
+        const response = await eliminar(endopint.eliminarLibro, uuid);
+        if(response.code === 200) {
+            setAlerta({
+                msg: "El libro se ha eliminado correctamente.",
+                error: false
+            });
+
+            setTimeout(() => {
+                setLibros(libros.filter(libro => libro.uuid !== uuid));
+                limpiarFormulario();
+                setShowModal(false);
+                setDeleteModal(false);
+                limpiarFormulario();
+            }, 2000);
+        } else {
+            setAlerta({
+                msg: "El libro no se ha podido eliminar.",
+                error: true
+            });
+            setTimeout(() => {
+                setAlerta({});
+            }, 2000);
+        }
+    }
+
     const limpiarFormulario = () => {
         setAlerta({});
         setTitulo("");
@@ -174,133 +213,175 @@ const GestionarLibros = () => {
 
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold mb-4 text-white">Gestionar libros</h2>
-            <button
-                onClick={() => {
-                    setShowModal(true);
-                    setLibroSeleccionado(null);
-                }}
-                className="text-white bg-teal-600 p-2 rounded-md font-bold mb-4"
-            >
-                Agregar libro
-            </button>
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {libros.map((libro) => (
-                    <li
-                        key={libro.uuid}
-                    >
-                        {
-                            <LibroCard
-                                titulo={ libro.titulo}
-                                descripcion={ libro.descripcion}
-                                autor={ libro.autor}
-                                unidades={libro.unidades}
-                                unidadesDisponibles={libro.unidadesDisponibles}
-                                url={libro.url}
-                                onEdit={() => handleEdit(libro.uuid)}
-                                onDelete={() => handleDelete(libro.uuid)}
-                                observaciones={libro.observaciones}
-                            />
-                        }
+        <>
+            {
+                cargando ?
+                    (
+                        <div className="flex justify-center items-center h-full mt-8">
+                            <div className="flex-col items-center justify-center flex">
+                                <DotLoader color="#36d7b7"/>
+                                <span className="text-xl font-bold ml-2  mt-4 text-white">Cargando Libros...</span>
+                            </div>
 
-                    </li>
-                ))}
-            </ul>
-            <div className="flex justify-center mt-4">
-                <button
-                    disabled={paginaActual === 1}
-                    onClick={async () => {
-                        setPaginaActual(paginaActual - 1)
-                        paginaActual = paginaActual - 1;
-                        await obtenerLibrosPaginados()
-                    }}
-                    className={`text-white p-2 rounded-md font-bold mr-4 ${
-                        paginaActual === 1 ? "bg-gray-500" : "bg-teal-600"
-                    }`}
-                >
-                    Anterior
-                </button>
-                <span className="font-bold text-white">
-                    Página {paginaActual} de {totalPaginas}
-                </span>
-                <button
-                    disabled={paginaActual === totalPaginas}
-                    onClick={async () => {
-                        setPaginaActual(paginaActual + 1)
-                        paginaActual = paginaActual + 1;
-                        await obtenerLibrosPaginados()
-                    }}
-                    className={`text-white p-2 rounded-md font-bold ml-4 ${
-                        paginaActual === totalPaginas ? "bg-gray-500" : "bg-teal-600"
-                    }`}
-                >
-                    Siguiente
-                </button>
-            </div>
-            {showModal && (
-                <Modal show={true} onClose={() => setShowModal(false)}>
-                    <h2 className="text-2xl font-bold mb-4">
-                        {uuid ? "Agregar libro" : "Modificar libro"}
-                    </h2>
-                    {msg && <Alerta alerta={alerta}/>}
-                    <form onSubmit={handleSubmit}>
-                        <label className="block mb-2">Título:</label>
-                        <input
-                            type="text"
-                            value={titulo}
-                            onChange={(e) => setTitulo(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                            required
-                        />
-                        <label className="block mb-2">Autor:</label>
-                        <input
-                            type="text"
-                            value={autor}
-                            onChange={(e) => setAutor(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                            required
-                        />
-                        <label className="block mb-2">Descripción:</label>
-                        <textarea
-                            value={descripcion}
-                            onChange={(e) => setDescripcion(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                            required
-                        />
+                        </div>
+                    ): (
+                        libros.length > 0 ? (
+                            <div>
+                                <h2 className="text-2xl font-bold mb-4 text-white">Gestionar libros</h2>
+                                <button
+                                    onClick={() => {
+                                        setShowModal(true);
+                                        setLibroSeleccionado(null);
+                                    }}
+                                    className="text-white bg-teal-600 p-2 rounded-md font-bold mb-4"
+                                >
+                                    Agregar libro
+                                </button>
+                                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {libros.map((libro) => (
+                                        <li
+                                            key={libro.uuid}
+                                        >
+                                            {
+                                                <LibroCard
+                                                    titulo={ libro.titulo}
+                                                    descripcion={ libro.descripcion}
+                                                    autor={ libro.autor}
+                                                    unidades={libro.unidades}
+                                                    unidadesDisponibles={libro.unidadesDisponibles}
+                                                    url={libro.url}
+                                                    onEdit={() => handleEdit(libro.uuid)}
+                                                    onDelete={() =>  handleDelete(libro.uuid)}
+                                                    observaciones={libro.observaciones}
+                                                />
+                                            }
 
-                        <label className="block mb-2">Observaciones:</label>
-                        <textarea
-                            value={observaciones}
-                            onChange={(e) => setObservaciones(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                            required
-                        />
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex justify-center mt-4">
+                                    <button
+                                        disabled={paginaActual === 1}
+                                        onClick={async () => {
+                                            setPaginaActual(paginaActual - 1)
+                                            paginaActual = paginaActual - 1;
+                                            await obtenerLibrosPaginados()
+                                        }}
+                                        className={`text-white p-2 rounded-md font-bold mr-4 ${
+                                            paginaActual === 1 ? "bg-gray-500" : "bg-teal-600"
+                                        }`}
+                                    >
+                                        Anterior
+                                    </button>
+                                    <span className="font-bold text-white">
+                                 Página {paginaActual} de {totalPaginas}
+                                </span>
+                                    <button
+                                        disabled={paginaActual === totalPaginas}
+                                        onClick={async () => {
+                                            setPaginaActual(paginaActual + 1)
+                                            paginaActual = paginaActual + 1;
+                                            await obtenerLibrosPaginados()
+                                        }}
+                                        className={`text-white p-2 rounded-md font-bold ml-4 ${
+                                            paginaActual === totalPaginas ? "bg-gray-500" : "bg-teal-600"
+                                        }`}
+                                    >
+                                        Siguiente
+                                    </button>
+                                </div>
+                                {setShowModal && (
+                                    deleteModal ? (
+                                        <Modal show={true} onClose={(e) => {
+                                            setShowModal(false);
+                                            setDeleteModal(false);
+                                        }}>
+                                            {msg && <Alerta alerta={alerta}/>}
+                                            <h2 className="text-2xl font-bold mb-4">Eliminar libro</h2>
+                                            <p className="text-xl font-bold mb-4">¿Estás seguro de que quieres eliminar el libro?</p>
+                                            <p className="text-xl font-bold mb-4">Esta acción no se puede deshacer.</p>
+                                            <p className="text-xl font-bold mb-4">Título: {titulo}</p>
+                                            <p className="text-xl font-bold mb-4">Autor: {autor}</p>
+                                            <p className="text-xl font-bold mb-4">Unidades: {unidades}</p>
+                                            <p className="text-xl font-bold mb-4">Unidades disponibles: {unidadesDisponibles}</p>
+                                            <div>
+                                                <button type="submit" className="text-white bg-orange-400 p-2 rounded-md font-bold" id="eliminar" onClick={handleDeleteSubmit}>
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        </Modal>
+                                    ) : (
+                                        showModal && (
+                                            <Modal show={true} onClose={() => setShowModal(false)}>
+                                                <h2 className="text-2xl font-bold mb-4">
+                                                    {uuid ? "Agregar libro" : "Modificar libro"}
+                                                </h2>
+                                                {msg && <Alerta alerta={alerta}/>}
+                                                <form onSubmit={handleSubmit}>
+                                                    <label className="block mb-2">Título:</label>
+                                                    <input
+                                                        type="text"
+                                                        value={titulo}
+                                                        onChange={(e) => setTitulo(e.target.value)}
+                                                        className="w-full p-2 mb-4 border rounded-md"
+                                                        required
+                                                    />
+                                                    <label className="block mb-2">Autor:</label>
+                                                    <input
+                                                        type="text"
+                                                        value={autor}
+                                                        onChange={(e) => setAutor(e.target.value)}
+                                                        className="w-full p-2 mb-4 border rounded-md"
+                                                        required
+                                                    />
+                                                    <label className="block mb-2">Descripción:</label>
+                                                    <textarea
+                                                        value={descripcion}
+                                                        onChange={(e) => setDescripcion(e.target.value)}
+                                                        className="w-full p-2 mb-4 border rounded-md"
+                                                        required
+                                                    />
 
-                        <label className="block mb-2">URL de la imagen:</label>
-                        <input
-                            type="url"
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                            required
-                        />
-                        <label className="block mb-2">Unidades:</label>
-                        <input
-                            type="number"
-                            value={unidades}
-                            onChange={(e) => setUnidades(parseInt(e.target.value) || 0) }
-                            className="w-full p-2 mb-4 border rounded-md"
-                            required
-                        />
-                        <button type="submit" className="text-white bg-green-600 p-2 rounded-md font-bold" id={uuid ? "editar" : "crear"} onClick={handleSubmit}>
-                            {uuid ? "Actualizar" : "Agregar"}
-                        </button>
-                    </form>
+                                                    <label className="block mb-2">Observaciones:</label>
+                                                    <textarea
+                                                        value={observaciones}
+                                                        onChange={(e) => setObservaciones(e.target.value)}
+                                                        className="w-full p-2 mb-4 border rounded-md"
+                                                        required
+                                                    />
 
-                </Modal>
-            )}
-        </div>
+                                                    <label className="block mb-2">URL de la imagen:</label>
+                                                    <input
+                                                        type="url"
+                                                        value={url}
+                                                        onChange={(e) => setUrl(e.target.value)}
+                                                        className="w-full p-2 mb-4 border rounded-md"
+                                                        required
+                                                    />
+                                                    <label className="block mb-2">Unidades:</label>
+                                                    <input
+                                                        type="number"
+                                                        value={unidades}
+                                                        onChange={(e) => setUnidades(parseInt(e.target.value) || 0) }
+                                                        className="w-full p-2 mb-4 border rounded-md"
+                                                        required
+                                                    />
+                                                    <button type="submit" className="text-white bg-green-600 p-2 rounded-md font-bold" id={uuid ? "editar" : "crear"} onClick={handleSubmit}>
+                                                        {uuid ? "Actualizar" : "Agregar"}
+                                                    </button>
+                                                </form>
+                                            </Modal>
+                                        )
+                                    )
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-center text-2xl text-white">No hay libros registrados</p>
+                        )
+                    )
+            }
+        </>
+
     );
 };
 

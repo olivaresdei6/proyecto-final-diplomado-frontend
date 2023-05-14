@@ -23,7 +23,6 @@ const AuthProvider = ({children}) => {
             }else{
                 setCargando(false);
             }
-            setCargando(false);
         }
         autenticarUsuario();
     }, [])
@@ -37,7 +36,7 @@ const AuthProvider = ({children}) => {
                 auth,
                 setAuth,
                 cargando,
-                cerrarSesionAuth
+                setCargando,
             }}
         >
             {children}

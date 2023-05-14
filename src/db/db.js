@@ -70,3 +70,30 @@ export const update = async (endpoint, data, uuid) => {
 
     return await response.json();
 }
+
+export const eliminar = async (endpoint, uuid) => {
+    const url = `${urlApi}/${endpoint}/${uuid}`;
+    const token = localStorage.getItem('token');
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+
+        },
+    });
+
+    return await response.json();
+}
+
+export const cerrarSesion = async () => {
+    const url = `${urlApi}/usuario/cerrar_sesion`;
+    const token = localStorage.getItem('token');
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+    })
+}

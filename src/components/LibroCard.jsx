@@ -33,7 +33,7 @@ const LibroCard = ({ url, titulo, descripcion, autor, unidades, unidadesDisponib
                         <FontAwesomeIcon icon={faEdit} size="lg" />
                     </button>
 
-                    <button className="text-red-500 p-2 rounded-md font-bold">
+                    <button className="text-red-500 p-2 rounded-md font-bold" onClick={onDelete}>
                         <FontAwesomeIcon icon={faTrashAlt} size="lg" />
                     </button>
                 </div>

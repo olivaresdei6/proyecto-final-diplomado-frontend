@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {crearRegistro, obtenerRegistros, update} from "../db/db.js";
 import {endopint} from "../db/endopint.js";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal.jsx";
 import Alerta from "./Alerta.jsx";
+import {CgSpinner} from "react-icons/all.js";
+import {DotLoader} from "react-spinners";
 
 const Permiso = () => {
     const [uuid, setUuid] = useState(null);
@@ -19,32 +21,34 @@ const Permiso = () => {
     let [modulos, setModulos] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [alerta, setAlerta] = useState({});
+    const [cargando, setCargando] = useState(false);
 
-    const cargarPermisos = async () => {
-        const data = await obtenerRegistros(endopint.ruta);
-        console.log('Rutas: ', data)
+    const cargarPermisos = useCallback(async () => {
+        setCargando(true);
+        const [data, dataRoles, dataModulos, dataPermisos] = await Promise.all([
+            obtenerRegistros(endopint.ruta),
+            obtenerRegistros(endopint.rol),
+            obtenerRegistros(endopint.modulo),
+            obtenerRegistros(endopint.permiso)
+        ]);
 
-        const dataRoles = await obtenerRegistros(endopint.rol);
-        console.log('Roles: ', dataRoles)
-
-        const dataModulos = await obtenerRegistros(endopint.modulo);
-        console.log('Modulos: ', dataModulos)
-
-        const dataPermisos = await obtenerRegistros(endopint.permiso);
-        console.log('Permisos: ', dataPermisos)
-
-        if ( dataModulos.code >= 400 || dataRoles.code >= 400 || data.code >= 400 || dataPermisos.code >= 400) {
+        if (dataModulos.code >= 400 || dataRoles.code >= 400 || data.code >= 400 || dataPermisos.code >= 400) {
             setAlerta({
                 msg: dataModulos.message,
-                error : true
+                error: true
             });
         } else {
             setRutas(data.data);
             setRoles(dataRoles.data);
             setModulos(dataModulos.data);
             setPermisos(dataPermisos.data);
+            setCargando(false);
         }
-    }
+    }, []);
+
+    useEffect(() => {
+        cargarPermisos();
+    }, [cargarPermisos]);
 
     const crearPermiso = async () => {
         const response = await crearRegistro(endopint.permiso, {
@@ -98,10 +102,6 @@ const Permiso = () => {
         uuidRol= e.target.value;
     }
 
-    useEffect(() => {
-        cargarPermisos();
-    }, []);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (uuidRuta === "" || uuidModulo === "" || uuidRol === "") {
@@ -117,7 +117,6 @@ const Permiso = () => {
         }
         if (e.target.id === "crear") {
             const response = await crearPermiso();
-            console.log('Data', response)
             if (response.code >=300){
                 setAlerta({
                     msg: response.message,
@@ -189,127 +188,143 @@ const Permiso = () => {
 
     return (
         <>
-            <h2 className="text-2xl font-bold mb-6 text-white">Gestion de Permisos</h2>
-            <button onClick={() => {
-                setShowModal(true)
-                limpiarFormulario();
-            }} className="text-white bg-green-600 p-2 rounded-md font-bold mb-6">
-                Agregar permiso
-            </button>
 
-            <table className="min-w-full table-auto">
-                <thead>
-                    <tr className="text-left bg-gray-100">
-                        <th className="px-4 py-2">Nombre del modulo</th>
-                        <th className="px-4 py-2">Dirección del modulo</th>
-                        <th className="px-4 py-2">Nombre de la ruta</th>
-                        <th className="px-4 py-2">Dirección de la ruta</th>
-                        <th className="px-4 py-2">Nombre del rol</th>
-                        <th className="px-4 py-2">Descripción</th>
-                        <th className="px-4 py-2">Observaciones</th>
-                        <th className="px-4 py-2 text-right">Acciones</th>
-                    </tr>
-                </thead>
+            {
+                cargando ? (
+                    <div className="flex justify-center items-center h-full mt-8">
+                        <div className="flex-col items-center justify-center flex">
+                            <DotLoader color="#36d7b7"  />
+                            <span className="text-xl font-bold ml-2  mt-4 text-white">Cargando Permisos...</span>
+                        </div>
 
-                <tbody>
-                    {permisos.map((_permiso) => (
-                    <tr key={_permiso.uuid} className="border-t border-gray-100">
-                        <td className="px-4 py-2 text-white">{_permiso.modulo.nombre}</td>
-                        <td className="px-4 py-2 text-white">{_permiso.modulo.rutaModulo}</td>
-                        <td className="px-4 py-2 text-white">{_permiso.ruta.nombre}</td>
-                        <td className="px-4 py-2 text-white">{_permiso.ruta.ruta ? _permiso.ruta.ruta : "/"}</td>
-                        <td className="px-4 py-2 text-white">{_permiso.rol.nombre}</td>
-                        <td className="px-4 py-2 text-white">{_permiso.descripcion ? _permiso.descripcion : "Sin descripción"}</td>
-                        <td className="px-4 py-2 text-white">{_permiso.observacion ? _permiso.observacion : "Sin observaciones"}</td>
-                        <td className="flex justify-end space-x-2 mt-4">
-                            <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_permiso.uuid)}>
-                                <FontAwesomeIcon icon={faEdit} size="lg" />
-                            </button>
-                            <button className="text-red-600 p-2 rounded-md font-bold">
-                                <FontAwesomeIcon icon={faTrashAlt} size="lg" />
-                            </button>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-
-            {showModal && (
-                <Modal show={true} onClose={() => setShowModal(false)}>
-                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{uuid ? "Editar Permiso" : "Crear Permiso"}</h3>
-                    {msg && <Alerta alerta={alerta}/>}
-
-                    <form onSubmit={handleSubmit}>
-
-                        <label htmlFor="rutas" className="block text-sm font-medium text-gray-700">
-                            Rol
-                        </label>
-                        <select
-                            id="roles"
-                            name="roles"
-                            onChange={handleRolesChange}
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                        >
-                            <option value="">Seleccione el rol</option>
-                            {roles.map((rol) => (
-                                <option key={rol.uuid} value={rol.uuid}>{rol.nombre}</option>
-                            ))}
-                        </select>
-
-                        <label htmlFor="rutas" className="block text-sm font-medium text-gray-700">
-                            Modulo
-                        </label>
-                        <select
-                            id="modulos"
-                            name="modulos"
-                            onChange={handleModulosChange}
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                        >
-                            <option value="">Seleccione el modulo</option>
-                            {modulos.map((modulo) => (
-                                <option key={modulo.uuid} value={modulo.uuid}>{modulo.nombre}</option>
-                            ))}
-                        </select>
-
-                        <label htmlFor="rutas" className="block text-sm font-medium text-gray-700">
-                            Ruta
-                        </label>
-                        <select
-                            id="rutas"
-                            name="rutas"
-                            onChange={handleRutasChange}
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                        >
-                            <option value="">Seleccione la ruta</option>
-                            {rutas.map((ruta) => (
-                                <option key={ruta.uuid} value={ruta.uuid}>{ruta.nombre}</option>
-                            ))}
-                        </select>
-
-
-
-                        <label htmlFor="descripcion" className="block mb-2">Descripción:</label>
-                        <textarea
-                            id="descripcion"
-                            value={descripcion}
-                            onChange={(e) => setDescripcion(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                        />
-
-                        <label htmlFor="observaciones" className="block mb-2">Observaciones:</label>
-                        <textarea
-                            id="observaciones"
-                            value={observacion}
-                            onChange={(e) => setObservacion(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded-md"
-                        />
-
-                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
-                            { `${uuid ? "Editar" : "Crear"} Relacion` }
+                    </div>
+                ): (
+                    <>
+                        <h2 className="text-2xl font-bold mb-6 text-white">Gestion de Permisos</h2>
+                        <button onClick={() => {
+                            setShowModal(true)
+                            limpiarFormulario();
+                        }} className="text-white bg-green-600 p-2 rounded-md font-bold mb-6">
+                            Agregar permiso
                         </button>
-                    </form>
-                </Modal>
-            )}
+
+                        <table className="min-w-full table-auto">
+                            <thead>
+                            <tr className="text-left bg-gray-100">
+                                <th className="px-4 py-2">Nombre del modulo</th>
+                                <th className="px-4 py-2">Dirección del modulo</th>
+                                <th className="px-4 py-2">Nombre de la ruta</th>
+                                <th className="px-4 py-2">Dirección de la ruta</th>
+                                <th className="px-4 py-2">Nombre del rol</th>
+                                <th className="px-4 py-2">Descripción</th>
+                                <th className="px-4 py-2">Observaciones</th>
+                                <th className="px-4 py-2 text-right">Acciones</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {permisos.map((_permiso) => (
+                                <tr key={_permiso.uuid} className="border-t border-gray-100">
+                                    <td className="px-4 py-2 text-white">{_permiso.modulo.nombre}</td>
+                                    <td className="px-4 py-2 text-white">{_permiso.modulo.rutaModulo}</td>
+                                    <td className="px-4 py-2 text-white">{_permiso.ruta.nombre}</td>
+                                    <td className="px-4 py-2 text-white">{_permiso.ruta.ruta ? _permiso.ruta.ruta : "/"}</td>
+                                    <td className="px-4 py-2 text-white">{_permiso.rol.nombre}</td>
+                                    <td className="px-4 py-2 text-white">{_permiso.descripcion ? _permiso.descripcion : "Sin descripción"}</td>
+                                    <td className="px-4 py-2 text-white">{_permiso.observacion ? _permiso.observacion : "Sin observaciones"}</td>
+                                    <td className="flex justify-end space-x-2 mt-4">
+                                        <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_permiso.uuid)}>
+                                            <FontAwesomeIcon icon={faEdit} size="lg" />
+                                        </button>
+                                        <button className="text-red-600 p-2 rounded-md font-bold">
+                                            <FontAwesomeIcon icon={faTrashAlt} size="lg" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+
+                        {showModal && (
+                            <Modal show={true} onClose={() => setShowModal(false)}>
+                                <h3 className="text-2xl font-medium mb-4 text-center capitalize">{uuid ? "Editar Permiso" : "Crear Permiso"}</h3>
+                                {msg && <Alerta alerta={alerta}/>}
+
+                                <form onSubmit={handleSubmit}>
+
+                                    <label htmlFor="rutas" className="block text-sm font-medium text-gray-700">
+                                        Rol
+                                    </label>
+                                    <select
+                                        id="roles"
+                                        name="roles"
+                                        onChange={handleRolesChange}
+                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                                    >
+                                        <option value="">Seleccione el rol</option>
+                                        {roles.map((rol) => (
+                                            <option key={rol.uuid} value={rol.uuid}>{rol.nombre}</option>
+                                        ))}
+                                    </select>
+
+                                    <label htmlFor="rutas" className="block text-sm font-medium text-gray-700">
+                                        Modulo
+                                    </label>
+                                    <select
+                                        id="modulos"
+                                        name="modulos"
+                                        onChange={handleModulosChange}
+                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                                    >
+                                        <option value="">Seleccione el modulo</option>
+                                        {modulos.map((modulo) => (
+                                            <option key={modulo.uuid} value={modulo.uuid}>{modulo.nombre}</option>
+                                        ))}
+                                    </select>
+
+                                    <label htmlFor="rutas" className="block text-sm font-medium text-gray-700">
+                                        Ruta
+                                    </label>
+                                    <select
+                                        id="rutas"
+                                        name="rutas"
+                                        onChange={handleRutasChange}
+                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                                    >
+                                        <option value="">Seleccione la ruta</option>
+                                        {rutas.map((ruta) => (
+                                            <option key={ruta.uuid} value={ruta.uuid}>{ruta.nombre}</option>
+                                        ))}
+                                    </select>
+
+
+
+                                    <label htmlFor="descripcion" className="block mb-2">Descripción:</label>
+                                    <textarea
+                                        id="descripcion"
+                                        value={descripcion}
+                                        onChange={(e) => setDescripcion(e.target.value)}
+                                        className="w-full p-2 mb-4 border rounded-md"
+                                    />
+
+                                    <label htmlFor="observaciones" className="block mb-2">Observaciones:</label>
+                                    <textarea
+                                        id="observaciones"
+                                        value={observacion}
+                                        onChange={(e) => setObservacion(e.target.value)}
+                                        className="w-full p-2 mb-4 border rounded-md"
+                                    />
+
+                                    <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
+                                        { `${uuid ? "Editar" : "Crear"} Relacion` }
+                                    </button>
+                                </form>
+                            </Modal>
+                        )}
+                    </>
+                )
+            }
+
 
 
         </>

@@ -2,6 +2,7 @@ export const endopint = {
     registrarUsuario: 'usuario',
     login: 'usuario/login',
     libro: 'libro',
+    eliminarLibro: 'libro/delete',
     libroPaginacion: 'libro/paginado',
     usuario: 'usuario/one',
     modulo: 'permiso_modulo',

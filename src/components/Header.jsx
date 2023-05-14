@@ -1,16 +1,17 @@
 import {Link} from 'react-router-dom';
+import {cerrarSesion} from "../db/db.js";
 //import useLibros from "../hooks/useLibros";
 const Header = () => {
 
-    // const { handleBuscador, cerrarSesionLibros } = useLibros();
 
-    //const { cerrarSesionAuth} = useAuth();
-
-    const handleCerrarSesion = () => {
-        //cerrarSesionAuth()
-        //cerrarSesionLibros()
-        //localStorage.removeItem('token')
+    const handleCerrarSesion = async () => {
+        await  cerrarSesion();
+        localStorage.removeItem('token');
+        window.location.reload();
     }
+
+
+
 
     return(
         <header className="">
