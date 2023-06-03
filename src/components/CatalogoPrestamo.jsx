@@ -12,7 +12,7 @@ const CatalogoPrestamo = () => {
     const [observacionesPrestamo, setObservacionesPrestamo] = useState("");
     const [fechaDevolucionEsperada, setFechaDevolucionEsperada] = useState("");
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [uuidLibro, setUuidLibro] = useState("");
+    const [idLibro, setIdLibro] = useState(null);
 
     const [libroSeleccionado, setLibroSeleccionado] = useState(null);
     const [libros, setLibros] = useState([]);
@@ -55,14 +55,14 @@ const CatalogoPrestamo = () => {
         const response = await crearRegistro(endopint.prestamo, {
             observacionesPrestamo: observacionesPrestamo ? observacionesPrestamo : '',
             fechaDevolucionEsperada,
-            uuidLibro
+            idLibro
         });
         return response;
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (fechaDevolucionEsperada === "" || uuidLibro === "") {
+        if (fechaDevolucionEsperada === "" || idLibro === "") {
             setAlerta({
                 msg: "Los campos fecha de devolución y libro son obligatorios", error: true
             })
@@ -80,7 +80,7 @@ const CatalogoPrestamo = () => {
             });
             setTimeout(() => {
                 setLibros(libros.map(libro => {
-                    if (libro.uuid === data.data.uuid) {
+                    if (libro.id === data.data.id) {
                         libro.setUnidadesDisponibles = data.data.unidadesDisponibles;
                     }
                     return libro;
@@ -111,7 +111,7 @@ const CatalogoPrestamo = () => {
         setAlerta({});
         setFechaDevolucionEsperada("");
         setObservacionesPrestamo("");
-        setUuidLibro("");
+        setIdLibro("");
     }
 
     const {msg} = alerta;
@@ -132,33 +132,30 @@ const CatalogoPrestamo = () => {
                 ) : (
                     libros.length > 0 ? (
                         <>
-
                             <div>
                                 <h2 className="text-2xl font-bold mb-4 text-white">Catalogo de libros</h2>
                             </div>
-                            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {libros.map((libro) => (<li
-                                    key={libro.uuid}
-                                >
-                                    {<LibroCard
-                                        titulo={libro.titulo}
-                                        descripcion={libro.descripcion}
-                                        autor={libro.autor}
-                                        unidades={libro.unidades}
-                                        unidadesDisponibles={libro.unidadesDisponibles}
-                                        url={libro.url}
-                                        onEdit={() => {
-                                            setUuidLibro(libro.uuid);
-                                            setLibroSeleccionado(libro);
-                                            setShowModal(true);
-                                        }}
-                                        isCatalogo={true}
-                                        observaciones={libro.observaciones}
-                                    />}
-
-                                </li>))}
+                            <ul className="flex flex-col md:flex-wrap">
+                                {libros.map((libro) => (
+                                    <li key={libro.id}>
+                                        <LibroCard
+                                            titulo={libro.titulo}
+                                            descripcion={libro.descripcion}
+                                            autor={libro.autor}
+                                            unidades={libro.unidades}
+                                            unidadesDisponibles={libro.unidadesDisponibles}
+                                            url={libro.url}
+                                            onEdit={() => {
+                                                setIdLibro(libro.id);
+                                                setLibroSeleccionado(libro);
+                                                setShowModal(true);
+                                            }}
+                                            isCatalogo={true}
+                                            observaciones={libro.observaciones}
+                                        />
+                                    </li>
+                                ))}
                             </ul>
-
                             <div className="flex justify-center mt-4">
                                 <button
                                     disabled={paginaActual === 1}

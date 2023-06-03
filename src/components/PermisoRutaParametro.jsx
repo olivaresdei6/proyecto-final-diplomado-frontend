@@ -7,9 +7,9 @@ import {faEdit, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import Alerta from "./Alerta.jsx";
 
 const PermisoRutaParametro = () => {
-    const [uuid, setUuid] = useState(null);
-    let [uuidRuta, setUuidRuta] = useState(null);
-    let [uuidParametro, setUuidParametro] = useState(null);
+    const [id, setId] = useState(0);
+    let [idRuta, setIdRuta] = useState(0);
+    let [idParametro, setIdParametro] = useState(0);
     const [descripcion, setDescripcion] = useState("");
     const [observacion, setObservacion] = useState("");
     let [relaciones, setRelaciones] = useState([]);
@@ -31,8 +31,8 @@ const PermisoRutaParametro = () => {
 
     const crearRelacionRutaParametro = async () => {
         const response = await crearRegistro(endopint.rutaParametro, {
-            uuidParametro,
-            uuidRuta,
+            idParametro,
+            idRuta: idRuta,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
         });
@@ -41,34 +41,34 @@ const PermisoRutaParametro = () => {
 
     const editarRelacionRutaParametro = async () => {
         const response = await update(endopint.rutaParametro, {
-            uuidParametro,
-            uuidRuta,
+            idParametro,
+            idRuta: idRuta,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
-        }, uuid);
+        }, id);
         return response.data ? response.data : null;
     }
 
-    const handleEdit = (uuid) => {
+    const handleEdit = (id) => {
         setShowModal(true);
-        console.log(uuid)
-        const relacion = relaciones.find(relacion => relacion.uuid === uuid);
+        console.log(id)
+        const relacion = relaciones.find(relacion => relacion.id === id);
         console.log(relacion)
-        setUuidParametro(relacion.parametro.uuid);
-        setUuidRuta(relacion.ruta.uuid);
+        setIdParametro(relacion.parametro.id);
+        setIdRuta(relacion.ruta.id);
         setDescripcion(relacion.descripcion ? relacion.descripcion : "");
         setObservacion(relacion.observacion ? relacion.observacion : "");
-        setUuid(uuid);
+        setId(id);
     }
 
     const handleRutasChange = async (e) => {
-        await setUuidRuta(e.target.value);
-        uuidRuta= e.target.value;
+        await setIdRuta(e.target.value);
+        idRuta= e.target.value;
     };
 
     const handleParametrosChange = async (e) => {
-        await setUuidParametro(e.target.value);
-        uuidParametro= e.target.value;
+        await setIdParametro(e.target.value);
+        idParametro= e.target.value;
     }
 
     useEffect(() => {
@@ -77,7 +77,7 @@ const PermisoRutaParametro = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (uuidRuta === "" || uuidParametro === "") {
+        if (idRuta === 0 || idParametro === 0) {
             setAlerta({
                 msg: "Los campos ruta y parametro son obligatorios",
                 error : true
@@ -119,9 +119,9 @@ const PermisoRutaParametro = () => {
                     error: false
                 });
                 setRelaciones(relaciones.map(_relacion => {
-                    if (_relacion.uuid === uuid) {
-                        _relacion.ruta.uuid = uuidRuta;
-                        _relacion.parametro.uuid = uuidParametro;
+                    if (_relacion.id === id) {
+                        _relacion.ruta.id = idRuta;
+                        _relacion.parametro.id = idParametro;
                         _relacion.descripcion = descripcion;
                         _relacion.observacion = observacion;
                     }
@@ -146,8 +146,8 @@ const PermisoRutaParametro = () => {
 
     const limpiarFormulario = () => {
         setAlerta({});
-        setUuidRuta("");
-        setUuidParametro("");
+        setIdRuta(0);
+        setIdParametro(0);
         setDescripcion("");
         setObservacion("");
     }
@@ -180,7 +180,7 @@ const PermisoRutaParametro = () => {
 
                 <tbody>
                     {relaciones.map((_relacion) => (
-                    <tr key={_relacion.uuid} className="border-t border-gray-100">
+                    <tr key={_relacion.id} className="border-t border-gray-100">
                         <td className="px-4 py-2 text-white">{_relacion.ruta.nombre}</td>
                         <td className="px-4 py-2 text-white">{_relacion.ruta.ruta ? _relacion.ruta.ruta : "/"}</td>
                         <td className="px-4 py-2 text-white">{_relacion.parametro.nombre}</td>
@@ -188,7 +188,7 @@ const PermisoRutaParametro = () => {
                         <td className="px-4 py-2 text-white">{_relacion.descripcion ? _relacion.descripcion : "Sin descripción"}</td>
                         <td className="px-4 py-2 text-white">{_relacion.observacion ? _relacion.observacion : "Sin observaciones"}</td>
                         <td className="flex justify-end space-x-2 mt-4">
-                            <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_relacion.uuid)}>
+                            <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_relacion.id)}>
                                 <FontAwesomeIcon icon={faEdit} size="lg" />
                             </button>
                             <button className="text-red-600 p-2 rounded-md font-bold">
@@ -202,7 +202,7 @@ const PermisoRutaParametro = () => {
 
             {showModal && (
                 <Modal show={true} onClose={() => setShowModal(false)}>
-                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{uuid ? "Editar relación" : "Crear relación"}</h3>
+                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{id ? "Editar relación" : "Crear relación"}</h3>
                     {msg && <Alerta alerta={alerta}/>}
 
                     <form onSubmit={handleSubmit}>
@@ -218,7 +218,7 @@ const PermisoRutaParametro = () => {
                         >
                             <option value="">Seleccione la ruta</option>
                             {rutas.map((ruta) => (
-                                <option key={ruta.uuid} value={ruta.uuid}>{ruta.nombre}</option>
+                                <option key={ruta.id} value={ruta.id}>{ruta.nombre}</option>
                             ))}
                         </select>
 
@@ -233,7 +233,7 @@ const PermisoRutaParametro = () => {
                         >
                             <option value="">Seleccione el parametro</option>
                             {parametros.map((parametro) => (
-                                <option key={parametro.uuid} value={parametro.uuid}>{parametro.nombre}</option>
+                                <option key={parametro.id} value={parametro.id}>{parametro.nombre}</option>
                             ))}
                         </select>
 
@@ -253,8 +253,8 @@ const PermisoRutaParametro = () => {
                             className="w-full p-2 mb-4 border rounded-md"
                         />
 
-                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
-                            { `${uuid ? "Editar" : "Crear"} Relacion` }
+                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ id ? "editar" : "crear" }>
+                            { `${id ? "Editar" : "Crear"} Relacion` }
                         </button>
                     </form>
                 </Modal>

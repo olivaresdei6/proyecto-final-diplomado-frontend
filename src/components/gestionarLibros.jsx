@@ -15,7 +15,7 @@ const GestionarLibros = () => {
     const [unidades, setUnidades] = useState(0);
     const [unidadesDisponibles, setUnidadesDisponibles] = useState(0);
 
-    const [uuid, setUuid] = useState(null);
+    const [id, setId] = useState(null);
     const [libroSeleccionado, setLibroSeleccionado] = useState(null);
     const [libros, setLibros] = useState([]);
 
@@ -61,13 +61,13 @@ const GestionarLibros = () => {
             observaciones: observaciones ? observaciones : '',
             url,
             unidades: parseInt(unidades)
-        }, uuid);
+        }, id);
         return response.data ? response.data : null;
     }
 
-    const handleEdit = (uuid) => {
+    const handleEdit = (id) => {
         setShowModal(true);
-        const libro = libros.find(libro => libro.uuid === uuid);
+        const libro = libros.find(libro => libro.id === id);
         console.log(libro)
         setTitulo(libro.titulo);
         setAutor(libro.autor);
@@ -76,13 +76,13 @@ const GestionarLibros = () => {
         setUrl(libro.url);
         setUnidades(libro.unidades);
         setUnidadesDisponibles(libro.unidadesDisponibles);
-        setUuid(uuid);
+        setId(id);
     }
 
-    const handleDelete = ( uuid) => {
+    const handleDelete = ( id) => {
         setShowModal(true);
         setDeleteModal(true);
-        const libro = libros.find(libro => libro.uuid === uuid);
+        const libro = libros.find(libro => libro.id === id);
         console.log(libro)
         setTitulo(libro.titulo);
         setAutor(libro.autor);
@@ -91,7 +91,7 @@ const GestionarLibros = () => {
         setUrl(libro.url);
         setUnidades(libro.unidades);
         setUnidadesDisponibles(libro.unidadesDisponibles);
-        setUuid(libro.uuid);
+        setId(libro.id);
     }
 
     useEffect(() => {
@@ -146,7 +146,7 @@ const GestionarLibros = () => {
                 });
                 setTimeout(() => {
                     setLibros(libros.map(libro => {
-                        if (libro.uuid === uuid) {
+                        if (libro.id === id) {
                             libro.titulo = titulo;
                             libro.autor = autor;
                             libro.descripcion = descripcion;
@@ -174,7 +174,7 @@ const GestionarLibros = () => {
 
     const handleDeleteSubmit = async (e) => {
         e.preventDefault();
-        const response = await eliminar(endopint.eliminarLibro, uuid);
+        const response = await eliminar(endopint.eliminarLibro, id);
         if(response.code === 200) {
             setAlerta({
                 msg: "El libro se ha eliminado correctamente.",
@@ -182,7 +182,7 @@ const GestionarLibros = () => {
             });
 
             setTimeout(() => {
-                setLibros(libros.filter(libro => libro.uuid !== uuid));
+                setLibros(libros.filter(libro => libro.id !== id));
                 limpiarFormulario();
                 setShowModal(false);
                 setDeleteModal(false);
@@ -207,7 +207,7 @@ const GestionarLibros = () => {
         setObservaciones("");
         setUrl("");
         setUnidades(0);
-        setUuid(null);
+        setId(null);
     }
     const { msg } = alerta;
 
@@ -226,25 +226,24 @@ const GestionarLibros = () => {
                         </div>
                     ): (
                         <>
-                            <h2 className="text-2xl font-bold mb-4 text-white">Gestionar libros</h2>
-                            <button
-                                onClick={() => {
-                                    setShowModal(true);
-                                    setLibroSeleccionado(null);
-                                }}
-                                className="text-white bg-teal-600 p-2 rounded-md font-bold mb-4"
-                            >
-                                Agregar libro
-                            </button>
                             {
                                 libros.length > 0 ? (
-                                    <div>
-                                        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    <>
+                                        <h2 className="text-2xl font-bold mb-4 text-white">Gestionar libros</h2>
+                                        <button
+                                            onClick={() => {
+                                                setShowModal(true);
+                                                setLibroSeleccionado(null);
+                                            }}
+                                            className="text-white bg-teal-600 p-2 rounded-md font-bold mb-4"
+                                        >
+                                            Agregar libro
+                                        </button>
+                                        <ul className="flex flex-col md:flex-wrap">
                                             {libros.map((libro) => (
                                                 <li
-                                                    key={libro.uuid}
+                                                    key={libro.id}
                                                 >
-                                                    {
                                                         <LibroCard
                                                             titulo={ libro.titulo}
                                                             descripcion={ libro.descripcion}
@@ -252,11 +251,10 @@ const GestionarLibros = () => {
                                                             unidades={libro.unidades}
                                                             unidadesDisponibles={libro.unidadesDisponibles}
                                                             url={libro.url}
-                                                            onEdit={() => handleEdit(libro.uuid)}
-                                                            onDelete={() =>  handleDelete(libro.uuid)}
+                                                            onEdit={() => handleEdit(libro.id)}
+                                                            onDelete={() =>  handleDelete(libro.id)}
                                                             observaciones={libro.observaciones}
                                                         />
-                                                    }
 
                                                 </li>
                                             ))}
@@ -316,7 +314,7 @@ const GestionarLibros = () => {
                                                 showModal && (
                                                     <Modal show={true} onClose={() => setShowModal(false)}>
                                                         <h2 className="text-2xl font-bold mb-4">
-                                                            {uuid ? "Agregar libro" : "Modificar libro"}
+                                                            {id ? "Agregar libro" : "Modificar libro"}
                                                         </h2>
                                                         {msg && <Alerta alerta={alerta}/>}
                                                         <form onSubmit={handleSubmit}>
@@ -368,15 +366,15 @@ const GestionarLibros = () => {
                                                                 className="w-full p-2 mb-4 border rounded-md"
                                                                 required
                                                             />
-                                                            <button type="submit" className="text-white bg-green-600 p-2 rounded-md font-bold" id={uuid ? "editar" : "crear"} onClick={handleSubmit}>
-                                                                {uuid ? "Actualizar" : "Agregar"}
+                                                            <button type="submit" className="text-white bg-green-600 p-2 rounded-md font-bold" id={id ? "editar" : "crear"} onClick={handleSubmit}>
+                                                                {id ? "Actualizar" : "Agregar"}
                                                             </button>
                                                         </form>
                                                     </Modal>
                                                 )
                                             )
                                         )}
-                                    </div>
+                                    </>
                                 ) : (
                                     <p className="text-center text-2xl text-white">No hay libros registrados</p>
                                 )

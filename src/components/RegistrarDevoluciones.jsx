@@ -34,16 +34,16 @@ const RegistrarDevoluciones = () => {
     }, []);
 
 
-    const handleOpenModalConfirmarDevolucion = (uuid) => {
+    const handleOpenModalConfirmarDevolucion = (id) => {
         setShowModal(true);
-        const prestamo = prestamos.find((prestamo) => prestamo.uuid === uuid);
+        const prestamo = prestamos.find((prestamo) => prestamo.id === id);
         setPrestamoSeleccionado(prestamo);
 
     }
 
     const handleConfirm = async () => {
         const response = await crearRegistro(endopint.devolucion, {
-            uuidPrestamo: prestamoSeleccionado.uuid,
+            idPrestamo: prestamoSeleccionado.id,
         });
         if (response.code >= 200 && response.code < 300) {
             setAlerta({
@@ -91,13 +91,13 @@ const RegistrarDevoluciones = () => {
 
                                     <tbody>
                                     {prestamos.map((prestamo) => (
-                                        <tr key={prestamo.uuid} className="border-t border-gray-100">
+                                        <tr key={prestamo.id} className="border-t border-gray-100">
                                             <td className="px-4 py-2 text-white">{`${prestamo.usuario.nombre} ${prestamo.usuario.apellido}`}</td>
                                             <td className="px-4 py-2 text-white">{prestamo.libro.titulo}</td>
                                             <td className="px-4 py-2 text-white">{prestamo.observacion ? prestamo.observacion : "Sin observaciones"}</td>
                                             <td className="px-4 py-2 text-white">{parseDate(prestamo.fechaDevolucionEsperada)}</td>
                                             <td className="flex justify-end space-x-2 mt-4">
-                                                <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleOpenModalConfirmarDevolucion(prestamo.uuid)}>
+                                                <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleOpenModalConfirmarDevolucion(prestamo.id)}>
                                                     <FontAwesomeIcon icon={faCheck} size="2xl" />
                                                 </button>
                                             </td>

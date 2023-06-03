@@ -44,7 +44,7 @@ const DevolucionesHechas = () => {
 
                     <tbody>
                     {devoluciones.map((prestamo) => (
-                        <tr key={prestamo.uuid} className="border-t border-gray-100">
+                        <tr key={prestamo.id} className="border-t border-gray-100">
                             <td className="px-4 py-2 text-white">{`${prestamo.usuario.nombre} ${prestamo.usuario.apellido}`}</td>
                             <td className="px-4 py-2 text-white">{prestamo.libro.titulo}</td>
                             <td className="px-4 py-2 text-white">{prestamo.observacion ? prestamo.observacion : "Sin observaciones"}</td>

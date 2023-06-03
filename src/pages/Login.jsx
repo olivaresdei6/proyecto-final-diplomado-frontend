@@ -16,8 +16,8 @@ const Login = () => {
     const comprobarAuth = async () => {
         setCargando(true);
         const token = localStorage.getItem('token');
-        if (token) {
-            console.log('Token', token)
+        console.log('Iniociando sesión', auth);
+        if (token !== undefined && auth.user){
             const data = await obtenerToken(endopint.usuario, token);
             console.log('Data', data)
             const uuid = data.data.data ? data.data.data.uuid : null;
@@ -29,6 +29,8 @@ const Login = () => {
                 // Lo redireccionamos a la ruta /libros
 
             }
+        } else {
+
         }
         setCargando(false);
     }
@@ -66,19 +68,27 @@ const Login = () => {
             })
         }
         if (response.code === 201) {
+            const {data:{data}} = response;
+            console.log('data', data)
+            localStorage.setItem('token', data.token);
+
             setAlerta({
                 msg: 'Usuario logueado correctamente',
                 error: false
             })
+            setTimeout(() => {
+                setAlerta({})
+                navigate('/libros');
+                window.location.reload();
+            }, 2000);
         }
-        const {data:{data}} = response;
-        console.log('data', data)
-        setAlerta({})
-        localStorage.setItem('token', data.token);
 
-        navigate('/libros');
+        /*setAlerta({})
+
+
+
         window.location.reload();
-        await setAuth({data});
+        await setAuth({data});*/
     }
 
     const { msg } = alerta;

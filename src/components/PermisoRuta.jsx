@@ -9,14 +9,14 @@ import Modal from "./Modal.jsx";
 const PermisoRuta = () => {
     const [nombre, setNombre] = useState("");
     const [ruta, setRuta] = useState("");
-    let [uuidMetodoHttp, setUuidMetodoHttp] = useState("");
+    let [idMetodoHttp, setIdMetodoHttp] = useState(0);
     const [descripcion, setDescripcion] = useState("");
     const [observacion, setObservacion] = useState("");
     const [alerta, setAlerta] = useState({});
     let [rutas, setRutas] = useState([]);
     const [metodosHttp, setMetodosHttp] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [uuid, setUuid] = useState(null);
+    const [id, setId] = useState(0);
 
     const obtenerRutas = async () => {
         const {data} = await obtenerRegistros(endopint.ruta);
@@ -30,7 +30,7 @@ const PermisoRuta = () => {
         const response = await crearRegistro(endopint.ruta, {
             nombre,
             ruta,
-            uuidMetodoHttp,
+            idMetodoHttp,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
         });
@@ -41,26 +41,26 @@ const PermisoRuta = () => {
         const response = await update(endopint.ruta, {
             nombre,
             ruta,
-            uuidMetodoHttp,
+            idMetodoHttp,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
-        }, uuid);
+        }, id);
         return response.data ? response.data : null;
     }
 
-    const handleEdit = (uuid) => {
+    const handleEdit = (id) => {
         setShowModal(true);
-        const ruta = rutas.find(ruta => ruta.uuid === uuid);
+        const ruta = rutas.find(ruta => ruta.id === id);
         setNombre(ruta.nombre);
         setRuta(ruta.ruta);
         setDescripcion(ruta.descripcion ? ruta.descripcion : "");
         setObservacion(ruta.observacion ? ruta.observacion : "");
-        setUuid(uuid);
+        setId(id);
     }
 
     const handleMetodosHttpChange = async (e) => {
-        await setUuidMetodoHttp(e.target.value);
-        uuidMetodoHttp= e.target.value;
+        await setIdMetodoHttp(parseInt(e.target.value));
+        idMetodoHttp= parseInt(e.target.value);
     };
 
     useEffect(() => {
@@ -69,7 +69,7 @@ const PermisoRuta = () => {
 
     const handleSubmit =async (e) => {
         e.preventDefault();
-        if (nombre === "" || ruta === "" || uuidMetodoHttp === "") {
+        if (nombre === "" || ruta === "" || idMetodoHttp === 0) {
             setAlerta({
                 msg: "Los campos nombre, ruta y metodo http son obligatorios",
                 error : true
@@ -111,7 +111,7 @@ const PermisoRuta = () => {
                     error: false
                 });
                 setRutas(rutas.map(_ruta => {
-                    if (_ruta.uuid === uuid) {
+                    if (_ruta.id === id) {
                         _ruta.nombre = nombre;
                         _ruta.ruta = ruta;
                         _ruta.descripcion = descripcion;
@@ -142,7 +142,7 @@ const PermisoRuta = () => {
         setRuta("");
         setDescripcion("");
         setObservacion("");
-        setUuidMetodoHttp("")
+        setIdMetodoHttp(0)
     }
 
     const { msg } = alerta;
@@ -171,14 +171,14 @@ const PermisoRuta = () => {
 
                 <tbody>
                 {rutas.map((_ruta) => (
-                    <tr key={_ruta.uuid} className="border-t border-gray-100">
+                    <tr key={_ruta.id} className="border-t border-gray-100">
                         <td className="px-4 py-2 text-white">{_ruta.nombre}</td>
                         <td className="px-4 py-2 text-white">{_ruta.ruta ? _ruta.ruta : "/"}</td>
                         <td className="px-4 py-2 text-white">{_ruta.metodoHttp.nombre}</td>
                         <td className="px-4 py-2 text-white">{_ruta.descripcion ? _ruta.descripcion : "Sin descripción"}</td>
                         <td className="px-4 py-2 text-white">{_ruta.observacion ? _ruta.observacion : "Sin observaciones"}</td>
                         <td className="flex justify-end space-x-2 mt-4">
-                            <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_ruta.uuid)}>
+                            <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_ruta.id)}>
                                 <FontAwesomeIcon icon={faEdit} size="lg" />
                             </button>
                             <button className="text-red-600 p-2 rounded-md font-bold">
@@ -192,7 +192,7 @@ const PermisoRuta = () => {
 
             {showModal && (
                 <Modal show={true} onClose={() => setShowModal(false)}>
-                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{uuid ? "Editar ruta" : "Crear ruta"}</h3>
+                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{id ? "Editar ruta" : "Crear ruta"}</h3>
                     {msg && <Alerta alerta={alerta}/>}
 
                     <form onSubmit={handleSubmit}>
@@ -227,7 +227,7 @@ const PermisoRuta = () => {
                         >
                             <option value="">Seleccione un Método Http</option>
                             {metodosHttp.map((metodoHttp) => (
-                                <option key={metodoHttp.uuid} value={metodoHttp.uuid}>{metodoHttp.nombre}</option>
+                                <option key={metodoHttp.id} value={metodoHttp.id}>{metodoHttp.nombre}</option>
                             ))}
                         </select>
 
@@ -247,8 +247,8 @@ const PermisoRuta = () => {
                             className="w-full p-2 mb-4 border rounded-md"
                         />
 
-                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
-                            { `${uuid ? "Editar" : "Crear"} Ruta` }
+                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ id ? "editar" : "crear" }>
+                            { `${id ? "Editar" : "Crear"} Ruta` }
                         </button>
                     </form>
                 </Modal>

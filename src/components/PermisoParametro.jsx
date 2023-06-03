@@ -9,20 +9,21 @@ import Modal from "./Modal.jsx";
 const PermisoParametro = () => {
     const [nombre, setNombre] = useState("");
     const [esRequerido, setEsRequerido] = useState(false);
-    let [uuidTipoDeDato, setUuidTipoDeDato] = useState("");
+    let [idTipoDeDato, setIdTipoDeDato] = useState(null);
     const [descripcion, setDescripcion] = useState("");
     const [observacion, setObservacion] = useState("");
     const [alerta, setAlerta] = useState({});
     let [parametros, setParametros] = useState([]);
     const [tiposDeDato, setTiposDeDato] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [uuid, setUuid] = useState(null);
+    const [id, setId] = useState(null);
 
     const obtenerParametros = async () => {
         const {data} = await obtenerRegistros(endopint.permisoParametro);
         data ? setParametros(data) : setParametros([]);
 
         const {data: dataTiposDeDato} = await obtenerRegistros(endopint.tiposDeDatos);
+        console.log(dataTiposDeDato)
         dataTiposDeDato ? setTiposDeDato(dataTiposDeDato) : setTiposDeDato([]);
     }
 
@@ -30,7 +31,7 @@ const PermisoParametro = () => {
         const response = await crearRegistro(endopint.permisoParametro, {
             nombre,
             esRequerido,
-            uuidTipoDeDato,
+            idTipoDeDato,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
         });
@@ -41,27 +42,28 @@ const PermisoParametro = () => {
         const response = await update(endopint.permisoParametro, {
             nombre,
             esRequerido,
-            uuidTipoDeDato,
+            idTipoDeDato,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
-        }, uuid);
+        }, id);
         return response.data ? response.data : null;
     }
 
-    const handleEdit = (uuid) => {
+    const handleEdit = (id) => {
         setShowModal(true);
-        const parametro = parametros.find(parametro => parametro.uuid === uuid);
+        const parametro = parametros.find(parametro => parametro.id === id);
+        console.log(parametro)
         setNombre(parametro.nombre);
         setEsRequerido(parametro.esRequerido);
-        setUuidTipoDeDato(parametro.tipoDeDato.uuid);
+        setIdTipoDeDato(parametro.tipoDeDato.id);
         setDescripcion(parametro.descripcion ? parametro.descripcion : "");
         setObservacion(parametro.observacion ? parametro.observacion : "");
-        setUuid(uuid);
+        setId(id);
     }
 
     const handleTipoDeDatoChange = async (e) => {
-        await setUuidTipoDeDato(e.target.value);
-        uuidTipoDeDato = e.target.value;
+        await setIdTipoDeDato(parseInt(e.target.value));
+        idTipoDeDato = e.target.value;
     };
 
     useEffect(() => {
@@ -70,7 +72,7 @@ const PermisoParametro = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (nombre === "" || uuidTipoDeDato === "") {
+        if (nombre === "" || idTipoDeDato === null) {
             setAlerta({
                 msg: "Los campos nombre y tipo de dato son obligatorios",
                 error: true
@@ -125,9 +127,10 @@ const PermisoParametro = () => {
     const limpiarFormulario = () => {
         setNombre("");
         setEsRequerido(false);
-        setUuidTipoDeDato("");
+        setIdTipoDeDato(null);
         setDescripcion("");
         setObservacion("");
+        setId(null);
     }
 
     return (
@@ -153,14 +156,14 @@ const PermisoParametro = () => {
 
                 <tbody>
                     {parametros.map((parametro) => (
-                        <tr key={parametro.uuid} className="border-t border-gray-100">
+                        <tr key={parametro.id} className="border-t border-gray-100">
                             <td className="px-4 py-2 text-white">{parametro.nombre}</td>
                             <td className="px-4 py-2 text-white">{parametro.esRequerido ? "Sí" : "No"}</td>
                             <td className="px-4 py-2 text-white">{parametro.tipoDeDato.nombre}</td>
                             <td className="px-4 py-2 text-white">{parametro.descripcion ? parametro.descripcion : "Sin descripción"}</td>
                             <td className="px-4 py-2 text-white">{parametro.observacion ? parametro.observacion : "Sin observaciones"}</td>
                             <td className="flex justify-end space-x-2 mt-4">
-                                <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(parametro.uuid)}>
+                                <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(parametro.id)}>
                                     <FontAwesomeIcon icon={faEdit} size="lg" />
                                 </button>
                                 <button className="text-red-600 p-2 rounded-md font-bold">
@@ -173,7 +176,7 @@ const PermisoParametro = () => {
             </table>
             {showModal && (
                 <Modal show={true} onClose={() => setShowModal(false)}>
-                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{ `${uuid ? "Editar" : "Agregar"} Parámetro` }</h3>
+                    <h3 className="text-2xl font-medium mb-4 text-center capitalize">{ `${id > 0 ? "Editar" : "Agregar"} Parámetro` }</h3>
                     {alerta.msg && <Alerta alerta={alerta}/>}
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="nombre" className="block mb-2">Nombre del parámetro:</label>
@@ -195,17 +198,17 @@ const PermisoParametro = () => {
                             className="mb-4"
                         />
 
-                        <label htmlFor="uuidTipoDeDato" className="block mb-2">Tipo de dato:</label>
+                        <label htmlFor="idTipoDeDato" className="block mb-2">Tipo de dato:</label>
                         <select
-                            id="uuidTipoDeDato"
-                            value={uuidTipoDeDato}
+                            id="idTipoDeDato"
+                            value={idTipoDeDato}
                             onChange={handleTipoDeDatoChange}
                             className="w-full p-2 mb-4 border rounded-md"
                             required
                         >
                             <option value="">Seleccione un tipo de dato</option>
                             {tiposDeDato.map((tipoDeDato) => (
-                                <option key={tipoDeDato.uuid} value={tipoDeDato.uuid}>{tipoDeDato.nombre}</option>
+                                <option key={tipoDeDato.id} value={tipoDeDato.id}>{tipoDeDato.nombre}</option>
                             ))}
                         </select>
 
@@ -225,8 +228,8 @@ const PermisoParametro = () => {
                             className="w-full p-2 mb-4 border rounded-md"
                         />
 
-                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
-                            { `${uuid ? "Editar" : "Crear"} Parametro` }
+                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ id > 0 ? "editar" : "crear" }>
+                            { `${id > 0 ? "Editar" : "Crear"} Parametro` }
                         </button>
                     </form>
                 </Modal>
