@@ -1,14 +1,32 @@
 import { Link } from 'react-router-dom';
 import useAuth from "../hooks/useAuth.jsx";
+import EditarPerfil from "./EditarPerfil.jsx";
+import {useState} from "react";
 
 const Sidebar = () => {
+    const [showModal, setShowModal] = useState(false);
     const { auth } = useAuth()
     const rol = auth.data.data.rol.nombre;
     const nombre = auth.data.data.nombre;
     const apellido = auth.data.data.apellido;
+    const handleClickEditar = () => {
+        setShowModal(true);
+    };
+
     return (
         <aside className="md:w-50 lg:w-70 px-5 py-10 bg-gray-800 rounded-xl md:min-h-screen mt-10">
             <p className="text-xl font-bold text-white">Hola: {nombre} {apellido}</p>
+
+            <button className="bg-teal-600 w-full p-3 text-white uppercase font-bold block mt-5 text-center rounded-md" onClick={handleClickEditar}>Editar perfil</button>
+            {
+                showModal && (
+                    <EditarPerfil
+                        showModal={showModal}
+                        setShowModal={setShowModal}
+                    />
+                )
+            }
+
 
             <Link
                 to=""

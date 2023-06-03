@@ -1,10 +1,8 @@
 import React, {useEffect, useState} from "react";
 import Modal from "./Modal.jsx";
-import alerta from "./Alerta.jsx";
 import Alerta from "./Alerta.jsx";
 import {crearRegistro, obtenerRegistros, update} from "../db/db.js";
 import {endopint} from "../db/endopint.js";
-import {show} from "react-modal/lib/helpers/ariaAppHider.js";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 
@@ -16,7 +14,7 @@ const PermisoModulo = () => {
     const [alerta, setAlerta] = useState({});
     const [modulos, setModulos] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [uuid, setUuid] = useState(null);
+    const [id, setId] = useState(null);
 
     const obtenerModulos = async () => {
         const {data} = await obtenerRegistros(endopint.modulo);
@@ -39,18 +37,18 @@ const PermisoModulo = () => {
             rutaModulo,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
-        }, uuid);
+        }, id);
         return response.data ? response.data : null;
     }
 
-    const handleEdit = (uuid) => {
+    const handleEdit = (id) => {
         setShowModal(true);
-        const modulo = modulos.find(modulo => modulo.uuid === uuid);
+        const modulo = modulos.find(modulo => modulo.id === id);
         setNombre(modulo.nombre);
         setRutaModulo(modulo.rutaModulo);
         setDescripcion(modulo.descripcion ? modulo.descripcion : "");
         setObservacion(modulo.observacion ? modulo.observacion : "");
-        setUuid(uuid);
+        setId(id);
 
     }
 
@@ -103,7 +101,7 @@ const PermisoModulo = () => {
                     error: false
                 });
                 setModulos(modulos.map(modulo => {
-                    if (modulo.uuid === uuid) {
+                    if (modulo.id === id) {
                         modulo.nombre = nombre;
                         modulo.rutaModulo = rutaModulo;
                         modulo.descripcion = descripcion;
@@ -134,7 +132,7 @@ const PermisoModulo = () => {
         setRutaModulo("");
         setDescripcion("");
         setObservacion("");
-        setUuid(null);
+        setId(null);
     }
     const { msg } = alerta;
     return (
@@ -158,13 +156,13 @@ const PermisoModulo = () => {
 
                 <tbody>
                 {modulos.map((modulo) => (
-                    <tr key={modulo.uuid} className="border-t border-gray-100">
+                    <tr key={modulo.id} className="border-t border-gray-100">
                         <td className="px-4 py-2 text-white">{modulo.nombre}</td>
                         <td className="px-4 py-2 text-white">{modulo.rutaModulo}</td>
                         <td className="px-4 py-2 text-white">{modulo.descripcion ? modulo.descripcion : "Sin descripción"}</td>
                         <td className="px-4 py-2 text-white">{modulo.observacion ? modulo.observacion : "Sin observaciones"}</td>
                         <td className="flex justify-end space-x-2 mt-4">
-                                <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(modulo.uuid)}>
+                                <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(modulo.id)}>
                                     <FontAwesomeIcon icon={faEdit} size="lg" />
                                 </button>
                                 <button className="text-red-600 p-2 rounded-md font-bold">
@@ -217,8 +215,8 @@ const PermisoModulo = () => {
                             className="w-full p-2 mb-4 border rounded-md"
 
                         />
-                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
-                            { `${uuid ? "Editar" : "Crear"} Modulo` }
+                        <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ id ? "editar" : "crear" }>
+                            { `${id ? "Editar" : "Crear"} Modulo` }
                         </button>
                     </form>
                 </Modal>

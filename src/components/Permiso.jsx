@@ -5,14 +5,13 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal.jsx";
 import Alerta from "./Alerta.jsx";
-import {CgSpinner} from "react-icons/all.js";
 import {DotLoader} from "react-spinners";
 
 const Permiso = () => {
-    const [uuid, setUuid] = useState(null);
-    let [uuidRuta, setUuidRuta] = useState(null);
-    let [uuidModulo, setUuidModulo] = useState(null);
-    let [uuidRol, setUuidRol] = useState(null);
+    const [id, setId] = useState(null);
+    let [idRuta, setIdRuta] = useState(null);
+    let [idModulo, setIdModulo] = useState(null);
+    let [idRol, setIdRol] = useState(null);
     const [descripcion, setDescripcion] = useState("");
     const [observacion, setObservacion] = useState("");
     let [permisos, setPermisos] = useState([]);
@@ -52,9 +51,9 @@ const Permiso = () => {
 
     const crearPermiso = async () => {
         const response = await crearRegistro(endopint.permiso, {
-            uuidModulo,
-            uuidRuta,
-            uuidRol,
+            idModulo,
+            idRuta,
+            idRol,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
         });
@@ -64,47 +63,47 @@ const Permiso = () => {
 
     const editarPermiso = async () => {
         const response = await update(endopint.permiso, {
-            uuidModulo,
-            uuidRuta,
-            uuidRol,
+            idModulo,
+            idRuta,
+            idRol,
             descripcion : descripcion ? descripcion : '',
             observacion: observacion ? observacion : ''
-        }, uuid);
+        }, id);
         return response.data ? response.data : null;
     }
 
-    const handleEdit = (uuid) => {
+    const handleEdit = (id) => {
         setShowModal(true);
-        const permiso = permisos.find(permiso => permiso.uuid === uuid);
-        setUuidRuta(permiso.ruta.uuid);
-        uuidRuta= permiso.ruta.uuid;
-        setUuidRol(permiso.rol.uuid)
-        uuidRol= permiso.rol.uuid;
-        setUuidModulo(permiso.modulo.uuid)
-        uuidModulo= permiso.modulo.uuid;
+        const permiso = permisos.find(permiso => permiso.id === id);
+        setIdRuta(permiso.ruta.id);
+        idRuta= permiso.ruta.id;
+        setIdRol(permiso.rol.id)
+        idRol= permiso.rol.id;
+        setIdModulo(permiso.modulo.id)
+        idModulo= permiso.modulo.id;
         setDescripcion(permiso.descripcion ? permiso.descripcion : "");
         setObservacion(permiso.observacion ? permiso.observacion : "");
-        setUuid(uuid);
+        setId(id);
     }
 
     const handleRutasChange = async (e) => {
-        await setUuidRuta(e.target.value);
-        uuidRuta= e.target.value;
+        await setIdRuta(parseInt(e.target.value));
+        idRuta= parseInt(e.target.value);
     }
 
     const handleModulosChange = async (e) => {
-        await setUuidModulo(e.target.value);
-        uuidModulo= e.target.value;
+        await setIdModulo(parseInt(e.target.value));
+        idModulo= parseInt(e.target.value);
     }
 
     const handleRolesChange = async (e) => {
-        await setUuidRol(e.target.value);
-        uuidRol= e.target.value;
+        await setIdRol(parseInt(e.target.value));
+        idRol= parseInt(e.target.value);
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (uuidRuta === "" || uuidModulo === "" || uuidRol === "") {
+        if (idRuta === null || idModulo === null || idRol === null ){
             setAlerta({
                 msg: "Los campos ruta y parametro son obligatorios",
                 error : true
@@ -132,7 +131,7 @@ const Permiso = () => {
                     msg: "La relación se ha creado correctamente.",
                     error: false
                 });
-                cargarPermisos();
+                await cargarPermisos();
 
                 setTimeout(() => {
                     limpiarFormulario();
@@ -149,10 +148,10 @@ const Permiso = () => {
                     error: false
                 });
                 setPermisos(permisos.map(_permiso => {
-                    if (_permiso.uuid === uuid) {
-                        _permiso.ruta.uuid = uuidRuta;
-                        _permiso.rol.uuid = uuidRol;
-                        _permiso.modulo.uuid = uuidModulo;
+                    if (_permiso.id === id) {
+                        _permiso.ruta.id = idRuta;
+                        _permiso.rol.id = idRol;
+                        _permiso.modulo.id = idModulo;
                         _permiso.descripcion = descripcion;
                         _permiso.observacion = observacion;
                     }
@@ -177,9 +176,9 @@ const Permiso = () => {
 
     const limpiarFormulario = () => {
         setAlerta({});
-        setUuidRuta("");
-        setUuidModulo("");
-        setUuidRol("");
+        setIdRuta(null);
+        setIdModulo(null);
+        setIdRol(null);
         setDescripcion("");
         setObservacion("");
     }
@@ -224,7 +223,7 @@ const Permiso = () => {
 
                             <tbody>
                             {permisos.map((_permiso) => (
-                                <tr key={_permiso.uuid} className="border-t border-gray-100">
+                                <tr key={_permiso.id} className="border-t border-gray-100">
                                     <td className="px-4 py-2 text-white">{_permiso.modulo.nombre}</td>
                                     <td className="px-4 py-2 text-white">{_permiso.modulo.rutaModulo}</td>
                                     <td className="px-4 py-2 text-white">{_permiso.ruta.nombre}</td>
@@ -233,7 +232,7 @@ const Permiso = () => {
                                     <td className="px-4 py-2 text-white">{_permiso.descripcion ? _permiso.descripcion : "Sin descripción"}</td>
                                     <td className="px-4 py-2 text-white">{_permiso.observacion ? _permiso.observacion : "Sin observaciones"}</td>
                                     <td className="flex justify-end space-x-2 mt-4">
-                                        <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_permiso.uuid)}>
+                                        <button className="text-teal-600 p-2 rounded-md font-bold" onClick={() => handleEdit(_permiso.id)}>
                                             <FontAwesomeIcon icon={faEdit} size="lg" />
                                         </button>
                                         <button className="text-red-600 p-2 rounded-md font-bold">
@@ -247,7 +246,7 @@ const Permiso = () => {
 
                         {showModal && (
                             <Modal show={true} onClose={() => setShowModal(false)}>
-                                <h3 className="text-2xl font-medium mb-4 text-center capitalize">{uuid ? "Editar Permiso" : "Crear Permiso"}</h3>
+                                <h3 className="text-2xl font-medium mb-4 text-center capitalize">{id ? "Editar Permiso" : "Crear Permiso"}</h3>
                                 {msg && <Alerta alerta={alerta}/>}
 
                                 <form onSubmit={handleSubmit}>
@@ -263,7 +262,7 @@ const Permiso = () => {
                                     >
                                         <option value="">Seleccione el rol</option>
                                         {roles.map((rol) => (
-                                            <option key={rol.uuid} value={rol.uuid}>{rol.nombre}</option>
+                                            <option key={rol.id} value={rol.id}>{rol.nombre}</option>
                                         ))}
                                     </select>
 
@@ -278,7 +277,7 @@ const Permiso = () => {
                                     >
                                         <option value="">Seleccione el modulo</option>
                                         {modulos.map((modulo) => (
-                                            <option key={modulo.uuid} value={modulo.uuid}>{modulo.nombre}</option>
+                                            <option key={modulo.id} value={modulo.id}>{modulo.nombre}</option>
                                         ))}
                                     </select>
 
@@ -293,7 +292,7 @@ const Permiso = () => {
                                     >
                                         <option value="">Seleccione la ruta</option>
                                         {rutas.map((ruta) => (
-                                            <option key={ruta.uuid} value={ruta.uuid}>{ruta.nombre}</option>
+                                            <option key={ruta.id} value={ruta.id}>{ruta.nombre}</option>
                                         ))}
                                     </select>
 
@@ -315,8 +314,8 @@ const Permiso = () => {
                                         className="w-full p-2 mb-4 border rounded-md"
                                     />
 
-                                    <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ uuid ? "editar" : "crear" }>
-                                        { `${uuid ? "Editar" : "Crear"} Relacion` }
+                                    <button type="button" className="text-white bg-green-600 p-2 rounded-md font-bold mt-4" onClick={handleSubmit} id={ id ? "editar" : "crear" }>
+                                        { `${id ? "Editar" : "Crear"} Relacion` }
                                     </button>
                                 </form>
                             </Modal>
