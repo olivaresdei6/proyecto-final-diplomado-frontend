@@ -1,4 +1,4 @@
-const urlApi = "https://proyecto-diplomado-production.up.railway.app/";
+const urlApi = "https://proyecto-diplomado-production.up.railway.app/api/v1";
 const token = localStorage.getItem('token');
 export const crearRegistro = async (endpoint, data) => {
     const url = `${urlApi}/${endpoint}`;
